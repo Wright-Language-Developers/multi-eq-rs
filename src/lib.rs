@@ -32,13 +32,15 @@ macro_rules! multi_eq_make_derive {
 
 	    let input = syn::parse::<syn::DeriveInput>(input).unwrap();
 	    let input_ident = input.ident;
+	    let method_name = stringify!($method_name);
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
+		let method_name = stringify!($method_name);
 		fields.enumerate().fold(quote!(true), |acc, (i, item)| {
 		    let name = match item.ident {
 			Some(ident) => ident.to_string(),
 			None => i.to_string(),
 		    };
-		    quote!(#acc && self.#name.$method_name(other.#name))
+		    quote!(#acc && self.#name.#method_name(other.#name))
 		})
 	    };
 	    let expr = match input.data {
@@ -73,7 +75,7 @@ macro_rules! multi_eq_make_derive {
 	    };
 
 	    let ret = quote! {
-		fn $method_name(&self, other: &Self) -> bool {
+		fn #method_name(&self, other: &Self) -> bool {
 		    #expr
 		}
 	    };
