@@ -9,21 +9,19 @@ macro_rules! multi_eq_make_trait {
 	$vis trait $trait_name {
 	    fn $method_name(&self, other: &Self) -> bool;
 	}
-	multi_eq_make_derive!($trait_name, $method_name);
     };
     ($trait_name:ident, $method_name:ident) => {
 	trait $trait_name {
 	    fn $method_name(&self, other: &Self) -> bool;
 	}
-	multi_eq_make_derive!($trait_name, $method_name);
     };
 }
 
 #[macro_export]
 macro_rules! multi_eq_make_derive {
-    ($trait_name:ident, $method_name:ident) => {
+    ($vis:vis, $trait_name:ident, $method_name:ident) => {
 	#[proc_macro_derive($trait_name)]
-	pub fn $method_name(
+	$vis fn $method_name(
 	    input: multi_eq_proc_macro::TokenStream
 	) -> multi_eq_proc_macro::TokenStream {
 	    use multi_eq_quote as quote;
