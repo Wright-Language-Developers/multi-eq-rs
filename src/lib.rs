@@ -1,4 +1,7 @@
-extern crate proc_macro;
+pub use quote::quote as multi_eq_quote;
+pub extern crate proc_macro as multi_eq_proc_macro;
+pub extern crate proc_macro2 as multi_eq_proc_macro2;
+pub extern crate syn as multi_eq_syn;
 
 #[macro_export]
 macro_rules! multi_eq_make_trait {
@@ -6,13 +9,13 @@ macro_rules! multi_eq_make_trait {
 	$vis trait $trait_name {
 	    fn $method_name(&self, other: &Self) -> bool;
 	}
-	make_derive!($trait_name, $method_name);
+	multi_eq_make_derive!($trait_name, $method_name);
     };
     ($trait_name:ident, $method_name:ident) => {
 	trait $trait_name {
 	    fn $method_name(&self, other: &Self) -> bool;
 	}
-	make_derive!($trait_name, $method_name);
+	multi_eq_make_derive!($trait_name, $method_name);
     };
 }
 
@@ -20,7 +23,15 @@ macro_rules! multi_eq_make_trait {
 macro_rules! multi_eq_make_derive {
     ($trait_name:ident, $method_name:ident) => {
 	#[proc_macro_derive($trait_name)]
-	pub fn $method_name(input: TokenStream) -> TokenStream {
+	pub fn $method_name(
+	    input: multi_eq_proc_macro::TokenStream
+	) -> multi_eq_proc_macro::TokenStream {
+	    use multi_eq_quote as quote;
+	    use multi_eq_syn as syn;
+	    use multi_eq_proc_macro2 as proc_macro2;
+
+	    use proc_macro2::TokenStream as TokenStream2;
+
 	    let input = syn::parse::<syn::DeriveInput>(input).unwrap();
 	    let input_ident = input.ident;
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
@@ -55,7 +66,7 @@ macro_rules! multi_eq_make_derive {
 				syn::Fields::Unnamed(unnamed) => fields_eq(unnamed.unnamed.iter().cloned()),
 				syn::Fields::Unit => quote!(true),
 			    };
-			    quote!(#input_ident::#ident => $cmp_expr,)
+			    quote!(#input_ident::#ident => #cmp_expr,)
 			});
 		    let arms = arms.fold(quote!(), |accum, arm| quote!(#accum #arm));
 		    arms.into()
