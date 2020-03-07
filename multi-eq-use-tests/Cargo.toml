@@ -6,3 +6,6 @@ edition = "2018"
 
 [dev-dependencies.multi-eq-derive-tests]
 path = "../multi-eq-derive-tests"
+
+[dev-dependencies.multi-eq]
+path = ".."
