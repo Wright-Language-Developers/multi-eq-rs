@@ -1,5 +1,5 @@
 #[test]
-fn it_works() {
+fn test_basic_enum() {
     use multi_eq::*;
     use multi_eq_derive_tests::*;
 
