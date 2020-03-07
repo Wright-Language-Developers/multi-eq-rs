@@ -64,10 +64,11 @@ macro_rules! multi_eq_make_derive {
 				syn::Fields::Unnamed(unnamed) => fields_eq(unnamed.unnamed.iter().cloned()),
 				syn::Fields::Unit => quote!(true),
 			    };
-			    quote!(#input_ident::#ident => #cmp_expr,)
+			    quote!((#input_ident::#ident, #input_ident::#ident) => #cmp_expr,)
 			});
 		    let arms = arms.fold(quote!(), |accum, arm| quote!(#accum #arm));
-		    let match_expr = quote!( match self { #arms } );
+		    let arms = quote!(#arms (_, _) => false,);
+		    let match_expr = quote!( match (self, other) { #arms } );
 		    match_expr
 		}
 		syn::Data::Union(_) => panic!("unions are not supported"),
