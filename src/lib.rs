@@ -67,7 +67,7 @@ macro_rules! multi_eq_make_derive {
 			Some(name) => format_ident!("{}", name),
 			None => format_ident!("{}", stringify!($method_name)),
 		    };
-		    quote!(#acc && self.#name.#method_name(other.#name))
+		    quote!(#acc && self.#name.#method_name(&other.#name))
 		})
 	    };
 	    let expr = match input.data {
