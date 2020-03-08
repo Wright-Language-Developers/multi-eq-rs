@@ -32,13 +32,13 @@ fn test_unit() {
 fn test_struct_attr_cmp() {
     #[derive(TestEq)]
     struct TestStruct {
-        #[multi_eq(cmp = "eq")]
+        #[test_eq(cmp = "eq")]
         a: u32,
 
-        #[multi_eq(cmp = "eq")]
+        #[test_eq(cmp = "eq")]
         b: bool,
 
-        #[multi_eq(cmp = "eq")]
+        #[test_eq(cmp = "eq")]
         c: (),
     }
 }

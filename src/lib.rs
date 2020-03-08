@@ -20,7 +20,7 @@ macro_rules! multi_eq_make_trait {
 #[macro_export]
 macro_rules! multi_eq_make_derive {
     ($vis:vis, $trait_name:ident, $method_name:ident) => {
-	#[proc_macro_derive($trait_name)]
+	#[proc_macro_derive($trait_name, attributes($method_name))]
 	$vis fn $method_name(
 	    input: multi_eq_proc_macro::TokenStream
 	) -> multi_eq_proc_macro::TokenStream {
@@ -31,6 +31,7 @@ macro_rules! multi_eq_make_derive {
 
 	    let input = syn::parse::<syn::DeriveInput>(input).unwrap();
 	    let input_ident = input.ident;
+
 	    fn path_is(path: &syn::Path, s: &str) -> bool {
 		let segs = &path.segments;
 		segs.len() == 1 && {
@@ -38,15 +39,19 @@ macro_rules! multi_eq_make_derive {
 		    seg.arguments.is_empty() && seg.ident.to_string() == s
 		}
 	    }
+
 	    fn lit_is_str(lit: &syn::Lit, s: &str) -> bool {
 		match lit {
 		    syn::Lit::Str(lit_str) => lit_str.value() == s,
 		    _ => false,
 		}
 	    }
+
 	    fn get_cmp_method_name(attr: &syn::Attribute) -> Option<String> {
+		let method_name = stringify!($method_name);
+
 		match attr.parse_meta() {
-		    Ok(syn::Meta::List(meta_list)) if path_is(&meta_list.path, "multi_eq") => {
+		    Ok(syn::Meta::List(meta_list)) if path_is(&meta_list.path, method_name) => {
 			meta_list.nested.iter().find_map(|nested_meta| match nested_meta {
 			    syn::NestedMeta::Meta(syn::Meta::NameValue(syn::MetaNameValue {
 				path, lit: syn::Lit::Str(lit_str), ..
@@ -57,6 +62,7 @@ macro_rules! multi_eq_make_derive {
 		    _ => None,
 		}
 	    }
+
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
 		fields.enumerate().fold(quote!(true), |acc, (i, field)| {
 		    let name = match field.ident {
@@ -70,6 +76,7 @@ macro_rules! multi_eq_make_derive {
 		    quote!(#acc && self.#name.#method_name(&other.#name))
 		})
 	    };
+
 	    let expr = match input.data {
 		syn::Data::Struct(syn::DataStruct {
 		    fields: syn::Fields::Named(fields),
