@@ -1,4 +1,4 @@
-pub use quote::quote as multi_eq_quote;
+pub extern crate quote as multi_eq_quote;
 pub extern crate proc_macro as multi_eq_proc_macro;
 pub extern crate proc_macro2 as multi_eq_proc_macro2;
 pub extern crate syn as multi_eq_syn;
@@ -24,11 +24,10 @@ macro_rules! multi_eq_make_derive {
 	$vis fn $method_name(
 	    input: multi_eq_proc_macro::TokenStream
 	) -> multi_eq_proc_macro::TokenStream {
-	    use multi_eq_quote as quote;
+	    use multi_eq_quote::quote;
+	    use multi_eq_quote::format_ident;
 	    use multi_eq_syn as syn;
-	    use multi_eq_proc_macro2 as proc_macro2;
-
-	    use proc_macro2::TokenStream as TokenStream2;
+	    use multi_eq_proc_macro2::TokenStream as TokenStream2;
 
 	    let input = syn::parse::<syn::DeriveInput>(input).unwrap();
 	    let input_ident = input.ident;
@@ -61,12 +60,12 @@ macro_rules! multi_eq_make_derive {
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
 		fields.enumerate().fold(quote!(true), |acc, (i, field)| {
 		    let name = match field.ident {
-			Some(ident) => ident.to_string(),
-			None => i.to_string(),
+			Some(ident) => format_ident!("{}", ident),
+			None => format_ident!("{}", i),
 		    };
 		    let method_name = match field.attrs.iter().find_map(get_cmp_method_name) {
-			Some(name) => name,
-			None => stringify!($method_name).to_string(),
+			Some(name) => format_ident!("{}", name),
+			None => format_ident!("{}", stringify!($method_name)),
 		    };
 		    quote!(#acc && self.#name.#method_name(other.#name))
 		})
