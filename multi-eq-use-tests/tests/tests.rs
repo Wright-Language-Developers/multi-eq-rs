@@ -41,4 +41,18 @@ fn test_struct_attr_cmp() {
         #[test_eq(cmp = "eq")]
         c: (),
     }
+
+    impl TestStruct {
+        fn new(a: u32, b: bool, c: ()) -> Self {
+            Self { a, b, c }
+        }
+    }
+
+    assert!(TestStruct::new(0, false, ()).test_eq(&TestStruct::new(0, false, ())));
+    assert!(TestStruct::new(20, false, ()).test_eq(&TestStruct::new(20, false, ())));
+    assert!(TestStruct::new(928, true, ()).test_eq(&TestStruct::new(928, true, ())));
+
+    assert!(!TestStruct::new(0, true, ()).test_eq(&TestStruct::new(0, false, ())));
+    assert!(!TestStruct::new(20, false, ()).test_eq(&TestStruct::new(22, false, ())));
+    assert!(!TestStruct::new(928, true, ()).test_eq(&TestStruct::new(908, false, ())));
 }
