@@ -27,3 +27,13 @@ fn test_unit() {
 
     assert!(TestUnit.test_eq(&TestUnit));
 }
+
+#[test]
+fn test_struct_attr_cmp() {
+    #[derive(TestEq)]
+    struct TestStruct {
+	a: u32,
+	b: bool,
+	c: (),
+    }
+}
