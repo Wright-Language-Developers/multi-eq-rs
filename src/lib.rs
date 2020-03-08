@@ -1,6 +1,6 @@
-pub extern crate quote as multi_eq_quote;
 pub extern crate proc_macro as multi_eq_proc_macro;
 pub extern crate proc_macro2 as multi_eq_proc_macro2;
+pub extern crate quote as multi_eq_quote;
 pub extern crate syn as multi_eq_syn;
 
 #[macro_export]
@@ -63,6 +63,20 @@ macro_rules! multi_eq_make_derive {
 		}
 	    }
 
+	    fn is_ignore(attr: &syn::Attribute) -> bool {
+		let method_name = stringify!($method_name);
+
+		match attr.parse_meta() {
+		    Ok(syn::Meta::List(meta_list)) if path_is(&meta_list.path, method_name) => {
+			meta_list.nested.iter().any(|nested_meta| match nested_meta {
+			    syn::NestedMeta::Meta(syn::Meta::Path(path)) => path_is(path, "ignore"),
+			    _ => false,
+			})
+		    }
+		    _ => false,
+		}
+	    }
+
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
 		fields.enumerate().fold(quote!(true), |acc, (i, field)| {
 		    let name = match field.ident {
@@ -73,7 +87,11 @@ macro_rules! multi_eq_make_derive {
 			Some(name) => format_ident!("{}", name),
 			None => format_ident!("{}", stringify!($method_name)),
 		    };
-		    quote!(#acc && self.#name.#method_name(&other.#name))
+		    if field.attrs.iter().any(is_ignore) {
+			acc
+		    } else {
+			quote!(#acc && self.#name.#method_name(&other.#name))
+		    }
 		})
 	    };
 

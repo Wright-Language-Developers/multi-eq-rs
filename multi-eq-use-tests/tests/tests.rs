@@ -56,3 +56,34 @@ fn test_struct_attr_cmp() {
     assert!(!TestStruct::new(20, false, ()).test_eq(&TestStruct::new(22, false, ())));
     assert!(!TestStruct::new(928, true, ()).test_eq(&TestStruct::new(908, false, ())));
 }
+
+#[test]
+fn test_struct_attr_ignore() {
+    #[derive(TestEq)]
+    struct TestStruct {
+        #[test_eq(cmp = "eq")]
+        a: u32,
+
+        #[test_eq(ignore)]
+        b: bool,
+    }
+
+    impl TestStruct {
+        fn new(a: u32, b: bool) -> Self {
+            Self { a, b }
+        }
+    }
+
+    assert!(TestStruct::new(0, false).test_eq(&TestStruct::new(0, false)));
+    assert!(TestStruct::new(20, false).test_eq(&TestStruct::new(20, false)));
+    assert!(TestStruct::new(928, true).test_eq(&TestStruct::new(928, true)));
+    assert!(TestStruct::new(0, false).test_eq(&TestStruct::new(0, true)));
+    assert!(TestStruct::new(20, true).test_eq(&TestStruct::new(20, false)));
+    assert!(TestStruct::new(928, false).test_eq(&TestStruct::new(928, true)));
+
+    assert!(!TestStruct::new(1, true).test_eq(&TestStruct::new(0, false)));
+    assert!(!TestStruct::new(20, false).test_eq(&TestStruct::new(22, false)));
+    assert!(!TestStruct::new(928, true).test_eq(&TestStruct::new(908, false)));
+
+    println!("{}", TestStruct::new(0, false).b);
+}
