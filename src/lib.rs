@@ -137,11 +137,34 @@ macro_rules! multi_eq_make_trait {
 ///   * `method_name` - name of the method in the trait, also used as the name
 ///                     of the proc macro
 ///
+/// ## Field attributes:
+/// Note that `method_name` refers to the `method_name` parameter supplied to
+/// the macro.
+///   * `#[method_name(cmp = "custom_comparison_method")]`
+///      * Instead of using the derived trait's method to compare this field,
+///     use `custom_comparison_method`.
+///   * `#[method_name(ignore)]`
+///     * When doing equality checking, ignore this field.
+///
 /// ## Example:
 /// ```ignore
 /// use multi_eq::*; // This global import is required for the macro to function
 ///
 /// multi_eq_make_derive!(pub, CustomEq, custom_eq);
+/// ```
+///
+/// ## Derive usage example:
+/// ```ignore
+/// #[derive(CustomEq)]
+/// struct MyStruct {
+///   // Use `PartialEq` to compare this field
+///   #[custom_eq(cmp = "eq")]
+///   a: u32,
+///
+///   // Ignore value of this field when checking equality
+///   #[custom_eq(ignore)]
+///   b: bool,
+/// }
 /// ```
 #[macro_export]
 macro_rules! multi_eq_make_derive {
