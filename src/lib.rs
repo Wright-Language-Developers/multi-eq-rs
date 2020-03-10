@@ -81,8 +81,8 @@ macro_rules! multi_eq_make_derive {
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
 		fields.enumerate().fold(quote!(true), |acc, (i, field)| {
 		    let name = match field.ident {
-			Some(ident) => format_ident!("{}", ident).to_token_stream(),
-			None => i.to_token_stream(),
+			Some(ident) => format_ident!("{}", ident),
+			None => format_ident!("v{}", i),
 		    };
 		    let method_name = match field.attrs.iter().find_map(get_cmp_method_name) {
 			Some(name) => format_ident!("{}", name),
@@ -92,6 +92,52 @@ macro_rules! multi_eq_make_derive {
 			acc
 		    } else {
 			quote!(#acc && self.#name.#method_name(&other.#name))
+		    }
+		})
+	    };
+
+	    struct ArmAcc {
+		pattern_left: TokenStream2,
+		pattern_right: TokenStream2,
+		body: TokenStream2,
+	    }
+
+	    fn gen_match_arm<I: Iterator<Item = syn::Field>>(fields: I) -> ArmAcc {
+		fields.enumerate().fold(ArmAcc {
+		    pattern_left: TokenStream2::new(),
+		    pattern_right: TokenStream2::new(),
+		    body: quote!(true),
+		}, |ArmAcc { pattern_left, pattern_right, body }, (i, field)| {
+		    let named = field.ident.is_some();
+		    let (name_base) = match field.ident {
+			Some(ident) => ident.to_string(),
+			None => format!("v{}", i),
+		    };
+		    let name_1 = format_ident!("{}_1", name_base);
+		    let name_2 = format_ident!("{}_2", name_base);
+		    let method_name = match field.attrs.iter().find_map(get_cmp_method_name) {
+			Some(name) => format_ident!("{}", name),
+			None => format_ident!("{}", stringify!($method_name)),
+		    };
+		    let cmp_expr = if field.attrs.iter().any(is_ignore) {
+			quote!(true)
+		    } else {
+			quote!(#name_1.#method_name(#name_2))
+		    };
+		    ArmAcc {
+			pattern_left: match (named, i == 0) {
+			    (true, true) => quote!(#name_base: #name_1),
+			    (false, true) => quote!(#name_1),
+			    (true, false) => quote!(#pattern_left, #name_base: #name_1),
+			    (false, false) => quote!(#pattern_left, #name_1),
+			},
+			pattern_right: match (named, i == 0) {
+			    (true, true) => quote!(#name_base: #name_2),
+			    (false, true) => quote!(#name_2),
+			    (true, false) => quote!(#pattern_right, #name_base: #name_2),
+			    (false, false) => quote!(#pattern_right, #name_2),
+			},
+			body: quote!(#body && #cmp_expr),
 		    }
 		})
 	    };
@@ -114,12 +160,27 @@ macro_rules! multi_eq_make_derive {
 			.variants
 			.iter()
 			.map(|syn::Variant { ident, fields, .. }| {
-			    let cmp_expr = match fields {
-				syn::Fields::Named(named) => fields_eq(named.named.iter().cloned()),
-				syn::Fields::Unnamed(unnamed) => fields_eq(unnamed.unnamed.iter().cloned()),
-				syn::Fields::Unit => quote!(true),
-			    };
-			    quote!((#input_ident::#ident, #input_ident::#ident) => #cmp_expr,)
+			    match fields {
+				syn::Fields::Named(named) => {
+				    let ArmAcc {
+					pattern_left,
+					pattern_right,
+					body
+				    } = gen_match_arm(named.named.iter().cloned());
+				    quote!((#input_ident::#ident(#pattern_left),
+					    #input_ident::#ident(#pattern_right)) => #body,)
+				}
+				syn::Fields::Unnamed(unnamed) => {
+				    let ArmAcc {
+					pattern_left,
+					pattern_right,
+					body
+				    } = gen_match_arm(unnamed.unnamed.iter().cloned());
+				    quote!((#input_ident::#ident(#pattern_left),
+					    #input_ident::#ident(#pattern_right)) => #body,)
+				}
+				syn::Fields::Unit => quote!((#input_ident::#ident, #input_ident::#ident) => true,),
+			    }
 			});
 		    let arms = arms.fold(quote!(), |accum, arm| quote!(#accum #arm));
 		    let arms = quote!(#arms (_, _) => false,);

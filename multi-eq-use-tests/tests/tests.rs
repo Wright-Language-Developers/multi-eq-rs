@@ -24,8 +24,16 @@ fn test_basic_enum() {
 fn test_tuple_enum() {
     #[derive(TestEq)]
     enum TestEnum {
-        A(u8, i8, bool),
-        B(u16, i16, ()),
+        A(
+            #[test_eq(cmp = "eq")] u8,
+            #[test_eq(cmp = "eq")] i8,
+            #[test_eq(cmp = "eq")] bool,
+        ),
+        B(
+            #[test_eq(cmp = "eq")] u16,
+            #[test_eq(cmp = "eq")] i16,
+            #[test_eq(cmp = "eq")] (),
+        ),
     }
 }
 
