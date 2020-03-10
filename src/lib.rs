@@ -12,7 +12,7 @@ pub extern crate syn as multi_eq_syn;
 ///   * `method_name` - name of the method in the trait
 /// ## Example:
 /// ```rust
-/// use multi_eq::*; // This global import is required for the macro to function
+/// use multi_eq::*;
 ///
 /// multi_eq_make_trait!(pub, PublicCustomEq, custom_eq);
 /// multi_eq_make_trait!(PrivateCustomEq, eq);
@@ -54,7 +54,7 @@ macro_rules! multi_eq_make_trait {
 ///                     of the proc macro
 /// ## Example:
 /// ```rust
-/// use multi_eq::*;
+/// use multi_eq::*; // This global import is required for the macro to function
 ///
 /// multi_eq_make_derive!(pub, CustomEq, custom_eq);
 /// ```
