@@ -25,6 +25,7 @@ macro_rules! multi_eq_make_derive {
 	    input: multi_eq_proc_macro::TokenStream
 	) -> multi_eq_proc_macro::TokenStream {
 	    use multi_eq_quote::quote;
+	    use multi_eq_quote::ToTokens;
 	    use multi_eq_quote::format_ident;
 	    use multi_eq_syn as syn;
 	    use multi_eq_proc_macro2::TokenStream as TokenStream2;
@@ -80,8 +81,8 @@ macro_rules! multi_eq_make_derive {
 	    fn fields_eq<I: Iterator<Item = syn::Field>>(fields: I) -> TokenStream2 {
 		fields.enumerate().fold(quote!(true), |acc, (i, field)| {
 		    let name = match field.ident {
-			Some(ident) => format_ident!("{}", ident),
-			None => format_ident!("{}", i),
+			Some(ident) => format_ident!("{}", ident).to_token_stream(),
+			None => i.to_token_stream(),
 		    };
 		    let method_name = match field.attrs.iter().find_map(get_cmp_method_name) {
 			Some(name) => format_ident!("{}", name),

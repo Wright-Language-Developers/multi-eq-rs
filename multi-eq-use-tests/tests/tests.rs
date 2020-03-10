@@ -21,6 +21,15 @@ fn test_basic_enum() {
 }
 
 #[test]
+fn test_tuple_enum() {
+    #[derive(TestEq)]
+    enum TestEnum {
+        A(u8, i8, bool),
+        B(u16, i16, ()),
+    }
+}
+
+#[test]
 fn test_unit() {
     #[derive(TestEq)]
     struct TestUnit;
