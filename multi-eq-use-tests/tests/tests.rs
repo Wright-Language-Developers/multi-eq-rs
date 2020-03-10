@@ -35,6 +35,19 @@ fn test_tuple_enum() {
             #[test_eq(cmp = "eq")] (),
         ),
     }
+
+    assert!(TestEnum::A(0, 0, false).test_eq(&TestEnum::A(0, 0, false)));
+    assert!(TestEnum::A(255, 100, true).test_eq(&TestEnum::A(255, 100, true)));
+    assert!(TestEnum::B(0, 0, ()).test_eq(&TestEnum::B(0, 0, ())));
+    assert!(TestEnum::B(255, 100, ()).test_eq(&TestEnum::B(255, 100, ())));
+
+    assert!(!TestEnum::A(0, 0, false).test_eq(&TestEnum::B(0, 0, ())));
+    assert!(!TestEnum::B(0, 0, ()).test_eq(&TestEnum::A(0, 0, false)));
+    assert!(!TestEnum::A(0, 100, true).test_eq(&TestEnum::A(255, 100, true)));
+    assert!(!TestEnum::A(255, 100, true).test_eq(&TestEnum::A(255, 0, true)));
+    assert!(!TestEnum::A(255, 100, true).test_eq(&TestEnum::A(255, 100, false)));
+    assert!(!TestEnum::B(255, 0, ()).test_eq(&TestEnum::B(255, 100, ())));
+    assert!(!TestEnum::B(255, 100, ()).test_eq(&TestEnum::B(0, 100, ())));
 }
 
 #[test]
