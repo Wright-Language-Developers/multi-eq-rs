@@ -1,3 +1,80 @@
+//! # `multi_eq`
+//! `multi_eq` is a macro library for creating custom equality derives.
+//!
+//! ## Description
+//! This crate exports two macros:
+//! [`multi_eq_make_trait!()`](multi_eq_make_trait), and
+//! [`multi_eq_make_derive!()`](multi_eq_make_derive). The first is for creating
+//! custom equality traits. The second is for creating a derive macro for a
+//! custom equality trait. Since derive macros can only be exported by a crate
+//! with the `proc-macro` crate type, a typical usage of this library is in
+//! multi-crate projects: a `proc-macro` crate for the derive macros, and a main
+//! crate importing the derive macros.
+//!
+//! ## Example
+//!
+//! ### File tree
+//! ```text
+//! custom-eq-example
+//! ├── Cargo.lock
+//! ├── Cargo.toml
+//! ├── custom-eq-derive
+//! │   ├── Cargo.lock
+//! │   ├── Cargo.toml
+//! │   └── src
+//! │       └── lib.rs
+//! └── src
+//!     └── lib.rs
+//! ```
+//!
+//! #### `custom-eq-example/custom-eq-derive/Cargo.toml`
+//! ```toml
+//! # ...
+//!
+//! [lib]
+//! proc-macro = true
+//!
+//! # ...
+//! ```
+//!
+//! #### `custom-eq-example/custom-eq-derive/src/lib.rs`
+//! ```ignore
+//! use multi_eq::*;
+//!
+//! /// Derive macro for a comparison trait `CustomEq` with a method `custom_eq`
+//! multi_eq_make_derive!(pub, CustomEq, custom_eq);
+//! ```
+//!
+//! #### `custom-eq-example/Cargo.toml`
+//! ```toml
+//! # ...
+//!
+//! [dependencies.custom-eq-derive]
+//! path = "custom-eq-derive"
+//!
+//! # ...
+//! ```
+//!
+//! #### `custom-eq-example/src/lib.rs`
+//! ```ignore
+//! use multi_eq::*;
+//! use custom_eq_derive::*;
+//!
+//! /// Custom comparison trait `CustomEq` with a method `custom_eq`
+//! multi_eq_make_trait!(CustomEq, custom_eq);
+//!
+//! #[derive(CustomEq)]
+//! struct MyStruct {
+//!   // Use `PartialEq` to compare this field
+//!   #[custom_eq(cmp = "eq")]
+//!   a: u32,
+//!
+//!   // Ignore value of this field when checking equality
+//!   #[custom_eq(ignore)]
+//!   b: bool,
+//! }
+//! ```
+
 pub extern crate proc_macro as multi_eq_proc_macro;
 pub extern crate proc_macro2 as multi_eq_proc_macro2;
 pub extern crate quote as multi_eq_quote;
