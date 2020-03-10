@@ -3,6 +3,11 @@ name = "multi-eq"
 version = "0.1.0"
 authors = ["Benjamin Levy <blevy@protonmail.com>"]
 edition = "2018"
+description = "Macros for creating custom equality trait derives"
+repository = "https://github.com/Wright-Language-Developers/multi-eq-rs/"
+readme = "README.md"
+keywords = ["eq", "equality", "trait", "derive", "macro"]
+license = "MIT"
 
 [dependencies]
 quote = "1.0.3"
