@@ -4,7 +4,8 @@ pub extern crate quote as multi_eq_quote;
 pub extern crate syn as multi_eq_syn;
 
 /// Macro to define a comparison trait. The format of the generated trait is the
-/// same as [`PartialEq`](std::cmp::PartialEq), but with different names.
+/// same as [`PartialEq`](std::cmp::PartialEq), but with potentially different
+/// names.
 /// ## Parameters:
 ///   * `vis` - optional visibility specifier
 ///   * `trait_name` - name of the trait being defined
@@ -40,6 +41,23 @@ macro_rules! multi_eq_make_trait {
     };
 }
 
+/// Macro to define a derive macro for a comparison trait. (Yes, this macro
+/// generates another macro that generates code) The format of the derived trait
+/// is the same as [`PartialEq`](std::cmp::PartialEq), but with potentially
+/// different names.
+/// ## Note:
+/// This macro can only be used in crates with the `proc-macro` crate type.
+/// ## Parameters:
+///   * `vis` - visibility specifier of the generated derive macro
+///   * `trait_name` - name of the trait to derive
+///   * `method_name` - name of the method in the trait, also used as the name
+///                     of the proc macro
+/// ## Example:
+/// ```rust
+/// use multi_eq::*;
+///
+/// multi_eq_make_derive!(pub, CustomEq, custom_eq);
+/// ```
 #[macro_export]
 macro_rules! multi_eq_make_derive {
     ($vis:vis, $trait_name:ident, $method_name:ident) => {
