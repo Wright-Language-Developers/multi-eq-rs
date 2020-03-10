@@ -74,11 +74,11 @@ fn test_struct_enum() {
 
     impl TestEnum {
         fn new_a(a: u8, b: i8, c: bool) -> Self {
-            Self::A { a, b, c }
+            TestEnum::A { a, b, c }
         }
 
         fn new_b(d: u16, e: i16) -> Self {
-            Self::B { d, e, c: () }
+            TestEnum::B { d, e, c: () }
         }
     }
 

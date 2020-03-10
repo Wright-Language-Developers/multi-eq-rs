@@ -110,8 +110,8 @@ macro_rules! multi_eq_make_derive {
 		}, |ArmAcc { pattern_left, pattern_right, body }, (i, field)| {
 		    let named = field.ident.is_some();
 		    let (name_base) = match field.ident {
-			Some(ident) => ident.to_string(),
-			None => format!("v{}", i),
+			Some(ident) => format_ident!("{}", ident),
+			None => format_ident!("v{}", i),
 		    };
 		    let name_1 = format_ident!("{}_1", name_base);
 		    let name_2 = format_ident!("{}_2", name_base);
@@ -167,8 +167,8 @@ macro_rules! multi_eq_make_derive {
 					pattern_right,
 					body
 				    } = gen_match_arm(named.named.iter().cloned());
-				    quote!((#input_ident::#ident(#pattern_left),
-					    #input_ident::#ident(#pattern_right)) => #body,)
+				    quote!((#input_ident::#ident { #pattern_left },
+					    #input_ident::#ident { #pattern_right }) => #body,)
 				}
 				syn::Fields::Unnamed(unnamed) => {
 				    let ArmAcc {
