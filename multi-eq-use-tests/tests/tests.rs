@@ -51,6 +51,52 @@ fn test_tuple_enum() {
 }
 
 #[test]
+fn test_struct_enum() {
+    #[derive(TestEq)]
+    enum TestEnum {
+        A {
+            #[test_eq(cmp = "eq")]
+            a: u8,
+            #[test_eq(cmp = "eq")]
+            b: i8,
+            #[test_eq(cmp = "eq")]
+            c: bool,
+        },
+        B {
+            #[test_eq(cmp = "eq")]
+            d: u16,
+            #[test_eq(cmp = "eq")]
+            e: i16,
+            #[test_eq(cmp = "eq")]
+            c: (),
+        },
+    }
+
+    impl TestEnum {
+        fn new_a(a: u8, b: i8, c: bool) -> Self {
+            Self::A { a, b, c }
+        }
+
+        fn new_b(d: u16, e: i16) -> Self {
+            Self::B { d, e, c: () }
+        }
+    }
+
+    assert!(TestEnum::new_a(0, 0, false).test_eq(&TestEnum::new_a(0, 0, false)));
+    assert!(TestEnum::new_a(255, 100, true).test_eq(&TestEnum::new_a(255, 100, true)));
+    assert!(TestEnum::new_b(0, 0).test_eq(&TestEnum::new_b(0, 0)));
+    assert!(TestEnum::new_b(255, 100).test_eq(&TestEnum::new_b(255, 100)));
+
+    assert!(!TestEnum::new_a(0, 0, false).test_eq(&TestEnum::new_b(0, 0)));
+    assert!(!TestEnum::new_b(0, 0).test_eq(&TestEnum::new_a(0, 0, false)));
+    assert!(!TestEnum::new_a(0, 100, true).test_eq(&TestEnum::new_a(255, 100, true)));
+    assert!(!TestEnum::new_a(255, 100, true).test_eq(&TestEnum::new_a(255, 0, true)));
+    assert!(!TestEnum::new_a(255, 100, true).test_eq(&TestEnum::new_a(255, 100, false)));
+    assert!(!TestEnum::new_b(255, 0).test_eq(&TestEnum::new_b(255, 100)));
+    assert!(!TestEnum::new_b(255, 100).test_eq(&TestEnum::new_b(0, 100)));
+}
+
+#[test]
 fn test_unit() {
     #[derive(TestEq)]
     struct TestUnit;
