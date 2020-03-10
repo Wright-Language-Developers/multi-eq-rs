@@ -163,3 +163,23 @@ fn test_struct_attr_ignore() {
 
     println!("{}", TestStruct::new(0, false).b);
 }
+
+#[test]
+fn test_struct_lifetime() {
+    #[derive(TestEq)]
+    struct TestStruct<'a> {
+        #[test_eq(cmp = "eq")]
+        s: &'a str,
+    }
+
+    impl<'a> TestStruct<'a> {
+        fn new(s: &'a str) -> Self {
+            Self { s }
+        }
+    }
+
+    assert!(TestStruct::new("foo").test_eq(&TestStruct::new("foo")));
+    assert!(TestStruct::new("bar").test_eq(&TestStruct::new("bar")));
+    assert!(!TestStruct::new("foo").test_eq(&TestStruct::new("bar")));
+    assert!(!TestStruct::new("bar").test_eq(&TestStruct::new("foo")));
+}

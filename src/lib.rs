@@ -237,10 +237,15 @@ macro_rules! multi_eq_make_derive {
                         Some(name) => format_ident!("{}", name),
                         None => format_ident!("{}", stringify!($method_name)),
                     };
+		    let refr = if let syn::Type::Reference(_) = field.ty {
+			quote!()
+		    } else {
+			quote!(&)
+		    };
                     if field.attrs.iter().any(is_ignore) {
                         acc
                     } else {
-                        quote!(#acc && self.#name.#method_name(&other.#name))
+                        quote!(#acc && self.#name.#method_name(#refr other.#name))
                     }
                 })
             };
@@ -339,8 +344,10 @@ macro_rules! multi_eq_make_derive {
                 syn::Data::Union(_) => panic!("unions are not supported"),
             };
 
+	    let generics = input.generics;
+
             let ret = quote! {
-                impl $trait_name for #input_ident {
+                impl #generics $trait_name for #input_ident #generics {
                     fn $method_name(&self, other: &Self) -> bool {
                         #expr
                     }
