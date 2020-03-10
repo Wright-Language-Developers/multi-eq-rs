@@ -53,7 +53,7 @@ macro_rules! multi_eq_make_trait {
 ///   * `method_name` - name of the method in the trait, also used as the name
 ///                     of the proc macro
 /// ## Example:
-/// ```rust
+/// ```ignore
 /// use multi_eq::*; // This global import is required for the macro to function
 ///
 /// multi_eq_make_derive!(pub, CustomEq, custom_eq);
